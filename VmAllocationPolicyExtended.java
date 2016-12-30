@@ -41,7 +41,7 @@ public class VmAllocationPolicyExtended extends VmAllocationPolicy{
 	}
 
 	/**
-	 * Allocates the host with less PEs in use for a given VM.
+	 * Allocates the host with less resources used(RAM,BW and CPU) for a given VM.
 	 * 
 	 * @param vm {@inheritDoc}
 	 * @return {@inheritDoc}
