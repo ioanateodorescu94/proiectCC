@@ -74,33 +74,25 @@ public class ProiectCC {
                 DatacenterBroker broker = createBroker();
                 int brokerId = broker.getId();
 
-                //Fourth step: Create one virtual machine
+                //Fourth step: Create 10 virtual machines
                 vmlist = new ArrayList<Vm>();
-
+        
                 //VM description
-                int vmid = 0;
-                int mips = 250;
-                long size = 10000; //image size (MB)
-                int ram = 2000; //vm memory (MB)
-                long bw = 1000;
-                int pesNumber = 1; //number of cpus
-                String vmm = "Xen"; //VMM name
-
-                //create two VMs
-                Vm vm1 = new Vm(vmid, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());
-
-                vmid++;
-                int ram2 = 2000;
-                Vm vm2 = new Vm(vmid, brokerId, mips, pesNumber, ram2, bw, size, vmm, new CloudletSchedulerTimeShared());
-                
-                vmid++;
-                int ram3 = 1000;
-                Vm vm3 = new Vm(vmid, brokerId, mips, pesNumber, ram2, bw, size, vmm, new CloudletSchedulerTimeShared());
-                
-                //add the VMs to the vmList
-                vmlist.add(vm1);
-                vmlist.add(vm2);
-                vmlist.add(vm3);
+		int mips = 250;
+		long size = 10000; //image size (MB)
+		int ram = 1000; //vm memory (MB)
+		long bw = 1000;
+		int pesNumber = 1; //number of cpus
+		String vmm = "Xen"; //VMM name
+                for (int i=0; i<20; i++){
+		    ram  = ram + 10*i;
+		    bw  = bw + 10*i;
+                    //create two VMs
+                    Vm vm = new Vm(i, brokerId, mips, pesNumber, ram, bw, size, vmm, new CloudletSchedulerTimeShared());          
+                    //add the VM to the vmList
+                    vmlist.add(vm);
+         
+		}    
 
                 //submit vm list to the broker
                 broker.submitVmList(vmlist);
@@ -109,34 +101,29 @@ public class ProiectCC {
                 //Fifth step: Create two Cloudlets
                 cloudletList = new ArrayList<Cloudlet>();
                 
-                //Cloudlet properties
-                int id = 0;
+                //Cloudlet properties  
                 pesNumber=1;
                 long length = 250000;
                 long fileSize = 300;
                 long outputSize = 300;
                 UtilizationModel utilizationModel = new UtilizationModelFull();
 
-                Cloudlet cloudlet1 = new Cloudlet(id, length, pesNumber, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
-                cloudlet1.setUserId(brokerId);
-
-                id++;
-                Cloudlet cloudlet2 = new Cloudlet(id, length, pesNumber, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
-                cloudlet2.setUserId(brokerId);
-
-                //add the cloudlets to the list
-                cloudletList.add(cloudlet1);
-                cloudletList.add(cloudlet2);
-
+                for (int j=0; j<60; j++){                       
+                    Cloudlet cloudlet = new Cloudlet(j, length, pesNumber, fileSize, outputSize, utilizationModel, utilizationModel, utilizationModel);
+                    cloudlet.setUserId(brokerId);
+                    cloudletList.add(cloudlet);
+                }
+               
                 //submit cloudlet list to the broker
                 broker.submitCloudletList(cloudletList);
 
 
-                //bind the cloudlets to the vms. This way, the broker
+                // bind the cloudlets to the vms. This way, the broker
                 // will submit the bound cloudlets only to the specific VM
-                broker.bindCloudletToVm(cloudlet1.getCloudletId(),vm1.getId());
-                broker.bindCloudletToVm(cloudlet2.getCloudletId(),vm2.getId());
-
+                // every machine will have 3 cloudlets
+                for (int k=0; k<60; k++){                       
+                    broker.bindCloudletToVm(cloudletList.get(k).getCloudletId(),vmlist.get(k/3).getId());
+                }
                 // Sixth step: Starts the simulation
                 CloudSim.startSimulation();
 
@@ -171,12 +158,11 @@ public class ProiectCC {
             peList.add(new Pe(0, new PeProvisionerSimple(mips))); // need to store Pe id and MIPS Rating
 
             //4. Create Host with its id and list of PEs and add them to the list of machines
-            int hostId=0;
-            int ram = 9000; //host memory (MB)
+            int ram = 2000; //host memory (MB)
             long storage = 1000000; //host storage
-            int bw = 4000;
+            int bw = 5000;
             
-            for(int id = 0; id < 2; id++){
+            for(int id = 0; id < 5; id++){
                 RamProvisioner ramProvisioner =  new RamProvisionerSimple(ram);
                 BwProvisioner bwProvisioner = new BwProvisionerSimple(bw);
                 VmScheduler vmScheduler = new VmSchedulerTimeShared(peList);
@@ -184,8 +170,8 @@ public class ProiectCC {
                     hostList.add(
                         new PowerHost (id,ramProvisioner,bwProvisioner,storage,peList,vmScheduler,powerModel)  
                     );
-                ram = ram - 6000;
-                bw = bw - 1000;
+                ram = ram + id*2000;
+                bw = bw + id*1000;
             }
 
             // 5. Create a DatacenterCharacteristics object that stores the
