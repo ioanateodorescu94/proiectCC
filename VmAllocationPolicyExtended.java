@@ -22,7 +22,7 @@ import org.cloudbus.cloudsim.HostDynamicWorkload;
  */
 public class VmAllocationPolicyExtended extends VmAllocationPolicy{
     
-    /** The map between each VM and its allocated host.
+        /** The map between each VM and its allocated host.
          * The map key is a VM UID and the value is the allocated host for that VM. */
 	private Map<String, Host> vmTable;
 
@@ -41,7 +41,7 @@ public class VmAllocationPolicyExtended extends VmAllocationPolicy{
 	}
 
 	/**
-	 * Allocates the host with less resources used(RAM,BW and CPU) for a given VM.
+	 * Allocates the host with less resources used for a given VM.
 	 * 
 	 * @param vm {@inheritDoc}
 	 * @return {@inheritDoc}
@@ -59,12 +59,15 @@ public class VmAllocationPolicyExtended extends VmAllocationPolicy{
             List<PowerHost> hosts = getHostList();
             int tries = 0;
             if (!getVmTable().containsKey(vm.getUid())) {
-                for (int i = 0; i < hosts.size(); i++) {
-                    if (!hosts.get(i).isSuitableForVm(vm)){
+                for (int i = 0; i < hosts.size(); i++) { 
+                    if (!hosts.get(i).isSuitableForVm(vm)) {
                           System.out.println("The host " + hosts.get(i).getId() + " is not suitable for VM");
-                          hosts.remove(i);   
-                    }  
-                }
+                           if (hosts.size() > 1) {
+                               hosts.remove(i);
+                           }
+                    }   
+                }  
+                
 
                 double maxCpu = hosts.get(0).getUtilizationOfCpu();
                 double maxRam = hosts.get(0).getRam()-hosts.get(0).getUtilizationOfRam();
@@ -139,7 +142,49 @@ public class VmAllocationPolicyExtended extends VmAllocationPolicy{
             return result;
 	
         }
-
+        /**
+	 * Allocates the hosts in order to optimize power consumption.
+	 * 
+	 * @param vm {@inheritDoc}
+	 * @return {@inheritDoc}
+	 * @pre $none
+	 * @post $none
+	 */
+        
+        public boolean allocateHostForVm_optimizePowerConsumption(Vm vm) {
+            System.out.println("--- Allocating virtual machine on host---");
+            boolean result = false;
+            List<PowerHost> hosts = getHostList();
+            Host host = null;
+            if (!getVmTable().containsKey(vm.getUid())) {
+                for (int i = 0; i < hosts.size(); i++) {
+                    System.out.println("------Host id: " + hosts.get(i).getId());
+                    System.out.println("------Host available mips: " + hosts.get(i).getAvailableMips() +  "-----");
+                    System.out.println("------Host available PEs: " + hosts.get(i).getNumberOfFreePes() +  "-----");
+                    System.out.println("------Host available RAM: " + hosts.get(i).getRamProvisioner().getAvailableRam() +  "-----");
+                    System.out.println("------Host available Bw: " + hosts.get(i).getBwProvisioner().getAvailableBw() +  "-----");
+                    if (hosts.get(i).isSuitableForVm(vm)) {
+                          System.out.println("The host " + hosts.get(i).getId() + " is suitable for VM");
+                          host = hosts.get(i);
+                          result = host.vmCreate(vm);
+                          break;
+                    }
+                }  
+            }
+            
+            if (result) { // if vm were succesfully created in the host
+                getVmTable().put(vm.getUid(), host);
+                result = true;
+            }
+            if (result) {
+                System.out.println("------Finish allocating virtual machine on host " + host.getId() +  "-----");
+            } else {
+                System.out.println("-----No host available for vm-----");
+            }
+                
+            return result;	
+        }
+        
 	@Override
 	public void deallocateHostForVm(Vm vm) {
 		Host host = getVmTable().remove(vm.getUid());
