@@ -77,10 +77,6 @@ public class VmAllocationPolicyExtended extends VmAllocationPolicy{
                 double maxCpu = hosts.get(0).getUtilizationOfCpu();
                 double maxRam = hosts.get(0).getRam()-hosts.get(0).getUtilizationOfRam();
                 double maxBw = hosts.get(0).getBw()-hosts.get(0).getUtilizationOfBw();
-
-                System.out.println("Max RAM " + maxRam);
-                System.out.println("Max CPU " + maxCpu);
-                System.out.println("Max Bw: " + maxBw);
                 
                 PowerHost hostRam = hosts.get(0);
                 PowerHost hostCpu = hosts.get(0);
