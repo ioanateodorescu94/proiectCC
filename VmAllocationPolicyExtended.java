@@ -65,7 +65,12 @@ public class VmAllocationPolicyExtended extends VmAllocationPolicy{
                            if (hosts.size() > 1) {
                                hosts.remove(i);
                            }
-                    }   
+			   if (hosts.size() == 1){
+                              System.out.println("No more hosts suitable for vm.");
+                              return result;
+                           }
+                    
+		    }   
                 }  
                 
 
